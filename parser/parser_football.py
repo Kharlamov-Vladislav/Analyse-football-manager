@@ -33,7 +33,7 @@ def create_dataset(index_start, index_finish):
     errors = 0
     for i in range(index_start, index_finish):
         try: 
-            data = BeautifulSoup(session.get("http://11x11.ru/reports/" + str(i)).text)
+            data = BeautifulSoup(session.get("http://11x11.ru/reports/{}".format(i)).text, "lxml")
 
             data_table = data('td', colspan = 2)[1]('td', align = None)[2:]
             data_table_right = data('td', colspan = 2)[1]('td', align = 'right')[2:]
@@ -82,7 +82,7 @@ def find_last_match_id():
     except:
         return 'Auhtorization failed'
     try:
-        return int((BeautifulSoup(session.get('http://11x11.ru/xml/games/history.php?act=fullhistory').text).
+        return int((BeautifulSoup(session.get('http://11x11.ru/xml/games/history.php?act=fullhistory').text, "lxml").
                findAll(href = re.compile('/reports'))[0]['href']).split('/')[-1])
     except:
         return "Not find last id match"
@@ -102,7 +102,8 @@ def dowland_chunks(numbers_chunks=3, lenght_cnunks=1000):
     datasets = []
     last_id = find_last_match_id()
     for i in reversed(range(numbers_chunks)):
-        print(last_id - lenght_cnunks * (i + 1) + 1, last_id - lenght_cnunks * i)
+        print('Processing chunk, from {} to {}'.format(last_id - lenght_cnunks * (i + 1) + 1, last_id - lenght_cnunks * i))
+        print(100/numbers_chunks * (numbers_chunks - i), '%')
         tmp_df = pd.DataFrame(create_dataset(last_id - lenght_cnunks * (i + 1) + 1, 
                                                  last_id - lenght_cnunks * i))['data']
         datasets.append(tmp_df)
